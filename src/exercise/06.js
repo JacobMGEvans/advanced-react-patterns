@@ -29,13 +29,15 @@ function useToggle({
   initialOn = false,
   reducer = toggleReducer,
   // 🐨 add an `onChange` prop.
+  onChange,
+  on: controlledOn,
   // 🐨 add an `on` option here
   // 💰 you can alias it to `controlledOn` to avoid "variable shadowing."
 } = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
   const [state, dispatch] = React.useReducer(reducer, initialState)
   // 🐨 determine whether on is controlled and assign that to `onIsControlled`
-  // 💰 `controlledOn != null`
+  const [] = React.useState(controlledOn != null ? controlledOn : )
 
   // 🐨 Replace the next line with assigning `on` to `controlledOn` if
   // `onIsControlled`, otherwise, it should be `state.on`.
