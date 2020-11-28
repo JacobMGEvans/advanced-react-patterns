@@ -3,6 +3,7 @@
 
 import * as React from 'react'
 import {Switch} from '../switch'
+import warning from 'warning'
 
 const callAll = (...fns) => (...args) => fns.forEach(fn => fn?.(...args))
 
@@ -24,40 +25,26 @@ function toggleReducer(state, {type, initialState}) {
     }
   }
 }
-const warning = async (on, onChange) => {
-  //   1. Passing `on` without `onChange`
-  if (!(on && onChange)) console.warn('Passing `on` without `onChange`')
-  const onProxy = new Proxy(
-    {on},
-    {
-      set: function (target) {
-        console.log(target)
-      },
-    },
-  )
-  const onChangeProxy = new Proxy(
-    {onChange},
-    {
-      set: function (target) {},
-    },
-  )
-  console.log(onProxy)
-  // 2. Passing a value for `on` and later passing `undefined` or `null`
-
-  // 3. Passing `undefined` or `null` for `on` and later passing a value
-}
 
 function useToggle({
   initialOn = false,
   reducer = toggleReducer,
   onChange,
   on: controlledOn,
+  readOnly = false,
 } = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
   const [state, dispatch] = React.useReducer(reducer, initialState)
   const onIsControlled = ![null, undefined].includes(controlledOn)
   const on = onIsControlled ? controlledOn : state.on
-  warning(controlledOn, onChange)
+
+  const hasOnChange = Boolean(onChange)
+  React.useEffect(() => {
+    warning(
+      !(!hasOnChange && onIsControlled && !readOnly),
+      `An \`on\` prop was provided to useToggle without an \`onChange\` handler. This will render a read-only toggle. If you want it to be mutable, use \`initialOn\`. Otherwise, set either \`onChange\` or \`readOnly\`.`,
+    )
+  }, [hasOnChange, onIsControlled, readOnly])
 
   const dispatchWithOnChange = action => {
     if (!onIsControlled) dispatch(action)
